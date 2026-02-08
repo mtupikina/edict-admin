@@ -1,0 +1,41 @@
+---
+description: Angular component templates must be in separate HTML files, not inline
+globs: "**/*.component.ts"
+alwaysApply: false
+---
+
+# Angular: Template in Separate File
+
+Always put Angular component templates in a dedicated `.html` file next to the component. Do **not** use inline `template: \`...\`` in the `@Component` decorator.
+
+## Rule
+
+- Use **`templateUrl`** pointing to a same-name `.html` file (e.g. `./login.component.html`).
+- Do **not** use inline **`template`** with a template string in the component class.
+
+## Example
+
+```typescript
+// ❌ BAD - inline template
+@Component({
+  selector: 'app-login',
+  template: `
+    <div class="container">...</div>
+  `,
+})
+export class LoginComponent {}
+
+// ✅ GOOD - separate file
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+})
+export class LoginComponent {}
+```
+
+## File layout
+
+- `login.component.ts` – component class only, with `templateUrl: './login.component.html'`
+- `login.component.html` – template markup
+
+Apply this pattern to all Angular components (including those with `template:` today). When creating or editing components, create or update the `.html` file and reference it via `templateUrl`.

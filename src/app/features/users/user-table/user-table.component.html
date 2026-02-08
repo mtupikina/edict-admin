@@ -1,0 +1,86 @@
+<p-table
+  [value]="users()"
+  [loading]="loading()"
+  [paginator]="true"
+  [rows]="10"
+  [rowsPerPageOptions]="[5, 10, 25]"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+  styleClass="p-datatable-sm p-datatable-striped"
+  [responsiveLayout]="'scroll'"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="firstName">
+        First Name
+        <p-sortIcon field="firstName" />
+      </th>
+      <th pSortableColumn="lastName">
+        Last Name
+        <p-sortIcon field="lastName" />
+      </th>
+      <th pSortableColumn="email">
+        Email
+        <p-sortIcon field="email" />
+      </th>
+      <th pSortableColumn="role">
+        Role
+        <p-sortIcon field="role" />
+      </th>
+      <th pSortableColumn="createdAt">
+        Created
+        <p-sortIcon field="createdAt" />
+      </th>
+      <th>Actions</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-user>
+    <tr>
+      <td>{{ user.firstName }}</td>
+      <td>{{ user.lastName }}</td>
+      <td>{{ user.email }}</td>
+      <td>
+        <span
+          class="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition-transform duration-200 hover:scale-105"
+          [ngClass]="{
+            'bg-primary-100 text-primary-700': user.role === 'student',
+            'bg-amber-100 text-amber-800': user.role === 'teacher',
+            'bg-violet-100 text-violet-800': user.role === 'admin'
+          }"
+        >
+          {{ user.role }}
+        </span>
+      </td>
+      <td>{{ user.createdAt | date : 'medium' }}</td>
+      <td>
+        <div class="flex gap-3">
+          <p-button
+            icon="pi pi-pencil"
+            [rounded]="true"
+            [text]="true"
+            severity="secondary"
+            (onClick)="onEdit(user)"
+            pTooltip="Edit"
+            tooltipPosition="top"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [rounded]="true"
+            [text]="true"
+            severity="danger"
+            (onClick)="onDelete($event, user)"
+            pTooltip="Delete"
+            tooltipPosition="top"
+          />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="6" class="text-center py-12 text-slate-500 font-medium">
+        No users found. Add your first user.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
