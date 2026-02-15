@@ -17,12 +17,28 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'users',
+    path: '',
     loadComponent: () =>
-      import('./features/users/user-list/user-list.component').then(
-        (m) => m.UserListComponent,
+      import('./core/components/app-layout/app-layout.component').then(
+        (m) => m.AppLayoutComponent,
       ),
     canActivate: [authGuard],
+    children: [
+      {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/users/user-list/user-list.component').then(
+            (m) => m.UserListComponent,
+          ),
+      },
+      {
+        path: 'permissions',
+        loadComponent: () =>
+          import('./features/permissions/roles-permissions.component').then(
+            (m) => m.RolesPermissionsComponent,
+          ),
+      },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];

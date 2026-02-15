@@ -1,0 +1,63 @@
+<p-toast />
+<p-confirmDialog />
+
+<h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-6">
+  Roles &amp; Permissions
+</h2>
+
+<p-tabs value="0">
+  <p-tablist>
+    <p-tab value="0">Roles</p-tab>
+    <p-tab value="1">Permissions</p-tab>
+  </p-tablist>
+  <p-tabpanels>
+    <p-tabpanel value="0">
+      <app-roles-table
+        [roles]="rolesState.roles()"
+        [loading]="rolesState.loading()"
+        (addRole)="rolesState.openCreate()"
+        (editRole)="rolesState.openEdit($event)"
+        (managePermissions)="assignmentState.open($event)"
+        (deleteRole)="rolesState.confirmDelete($event)"
+      />
+    </p-tabpanel>
+    <p-tabpanel value="1">
+      <app-permissions-table
+        [permissions]="permissionsState.permissions()"
+        [loading]="permissionsState.loading()"
+        (addPermission)="permissionsState.openCreate()"
+        (editPermission)="permissionsState.openEdit($event)"
+        (deletePermission)="permissionsState.confirmDelete($event)"
+      />
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+
+<app-role-form-dialog
+  [visible]="rolesState.dialogVisible()"
+  [editingRole]="rolesState.editing()"
+  [saving]="rolesState.saving()"
+  (visibleChange)="rolesState.dialogVisible.set($event)"
+  (save)="rolesState.save($event)"
+  (cancelDialog)="rolesState.closeDialog()"
+/>
+
+<app-permission-form-dialog
+  [visible]="permissionsState.dialogVisible()"
+  [editingPermission]="permissionsState.editing()"
+  [saving]="permissionsState.saving()"
+  (visibleChange)="permissionsState.dialogVisible.set($event)"
+  (save)="permissionsState.save($event)"
+  (cancelDialog)="permissionsState.closeDialog()"
+/>
+
+<app-role-permissions-dialog
+  [visible]="assignmentState.dialogVisible()"
+  [roleName]="assignmentState.role()?.name ?? ''"
+  [permissions]="assignmentState.permissionsWithChecked()"
+  [saving]="assignmentState.saving()"
+  (visibleChange)="assignmentState.dialogVisible.set($event)"
+  (save)="assignmentState.save()"
+  (cancelDialog)="assignmentState.close()"
+  (togglePermission)="assignmentState.toggle($event.permissionId, $event.checked)"
+/>

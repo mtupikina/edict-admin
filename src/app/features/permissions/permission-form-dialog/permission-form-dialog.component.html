@@ -1,0 +1,41 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [header]="editingPermission() ? 'Edit Permission' : 'Add Permission'"
+  [modal]="true"
+  [style]="{ width: 'min(100%, 400px)' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="onCancelDialog()"
+  styleClass="edict-dialog"
+>
+  <form [formGroup]="permissionForm" (ngSubmit)="onSave()" class="flex flex-col gap-5">
+    <div>
+      <label for="permName" class="block text-sm font-semibold text-slate-700 mb-1.5">Name</label>
+      <input
+        id="permName"
+        pInputText
+        formControlName="name"
+        class="w-full font-mono"
+        placeholder="e.g. words:read"
+      />
+      @if (permissionForm.get('name')?.invalid && permissionForm.get('name')?.touched) {
+        <small class="text-red-600">Name is required</small>
+      }
+    </div>
+    <div>
+      <label for="permDesc" class="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+      <input
+        id="permDesc"
+        pInputText
+        formControlName="description"
+        class="w-full"
+        placeholder="Optional"
+      />
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancelDialog()" />
+    <p-button label="Save" (onClick)="onSave()" [loading]="saving()" styleClass="min-w-[100px]" />
+  </ng-template>
+</p-dialog>
