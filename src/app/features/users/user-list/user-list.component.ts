@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+
 import { UserService } from '../services/user.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../models/user.model';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -26,7 +26,6 @@ import { UserFormDialogComponent, UserFormSavePayload } from '../user-form-dialo
 })
 export class UserListComponent implements OnInit {
   private readonly userService = inject(UserService);
-  private readonly authService = inject(AuthService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
@@ -113,7 +112,7 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  private deleteUser(user: User): void {
+  deleteUser(user: User): void {
     this.userService.delete(user._id).subscribe({
       next: () => {
         this.loadUsers();
@@ -131,9 +130,5 @@ export class UserListComponent implements OnInit {
         });
       },
     });
-  }
-
-  logout(): void {
-    this.authService.logout();
   }
 }

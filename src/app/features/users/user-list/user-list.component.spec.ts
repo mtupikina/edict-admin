@@ -24,13 +24,11 @@ describe('UserListComponent', () => {
   let component: UserListComponent;
   let fixture: ComponentFixture<UserListComponent>;
   let userService: jasmine.SpyObj<UserService>;
-  let authService: jasmine.SpyObj<AuthService>;
   let messageService: MessageService;
 
   beforeEach(async () => {
     userService = jasmine.createSpyObj('UserService', ['getAll', 'create', 'update', 'delete']);
     userService.getAll.and.returnValue(of([mockUser]));
-    authService = jasmine.createSpyObj('AuthService', ['logout']);
     await TestBed.configureTestingModule({
       imports: [UserListComponent],
       providers: [
@@ -38,7 +36,7 @@ describe('UserListComponent', () => {
         provideRouter([]),
         ConfirmationService,
         { provide: UserService, useValue: userService },
-        { provide: AuthService, useValue: authService },
+        { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['logout']) },
       ],
     }).compileComponents();
 
@@ -198,8 +196,4 @@ describe('UserListComponent', () => {
     );
   }));
 
-  it('logout calls authService.logout', () => {
-    component.logout();
-    expect(authService.logout).toHaveBeenCalled();
-  });
 });

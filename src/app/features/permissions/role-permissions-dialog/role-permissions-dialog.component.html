@@ -1,0 +1,41 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [header]="'Permissions for ' + roleName()"
+  [modal]="true"
+  [style]="{ width: 'min(100%, 480px)' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="cancelDialog.emit()"
+  styleClass="edict-dialog"
+>
+  <p class="text-slate-600 mb-4">Select which permissions this role has.</p>
+  <div class="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+    @for (item of permissions(); track item._id) {
+      <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="item.checked"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onToggle(item._id, $event)"
+          [inputId]="'perm-' + item._id"
+        />
+        <label [for]="'perm-' + item._id" class="font-mono text-sm cursor-pointer flex-1">
+          {{ item.name }}
+        </label>
+      </div>
+    }
+    @empty {
+      <p class="text-slate-500 py-4">No permissions defined. Add some in the Permissions tab.</p>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="cancelDialog.emit()" />
+    <p-button
+      label="Save"
+      (onClick)="save.emit()"
+      [loading]="saving()"
+      styleClass="min-w-[100px]"
+    />
+  </ng-template>
+</p-dialog>
