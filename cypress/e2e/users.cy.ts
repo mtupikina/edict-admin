@@ -21,7 +21,7 @@ describe('Users', () => {
           firstName: 'Jane',
           lastName: 'Doe',
           email: 'jane@test.com',
-          role: 'student',
+          roles: ['student'],
           createdAt: '',
           updatedAt: '',
         },

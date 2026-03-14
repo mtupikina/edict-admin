@@ -1,16 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { FormBuilder } from '@angular/forms';
+import { of } from 'rxjs';
 
 import { UserFormDialogComponent, UserFormSavePayload } from './user-form-dialog.component';
-import { User, UserRole, UpdateUserDto } from '../models/user.model';
+import { User, UpdateUserDto } from '../models/user.model';
+import { PermissionsService } from '../../permissions/services/permissions.service';
+
+const mockRoles = [
+  { _id: 'r1', name: 'student' },
+  { _id: 'r2', name: 'teacher' },
+  { _id: 'r3', name: 'admin' },
+];
 
 const mockUser: User = {
   _id: '1',
   firstName: 'John',
   lastName: 'Doe',
   email: 'john@test.com',
-  role: 'student',
+  roleIds: [mockRoles[0]],
   createdAt: '',
   updatedAt: '',
 };
@@ -22,7 +30,14 @@ describe('UserFormDialogComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserFormDialogComponent],
-      providers: [FormBuilder, provideAnimations()],
+      providers: [
+        FormBuilder,
+        provideAnimations(),
+        {
+          provide: PermissionsService,
+          useValue: { getAllRoles: () => of(mockRoles) },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserFormDialogComponent);
@@ -41,8 +56,7 @@ describe('UserFormDialogComponent', () => {
     expect(component.form.contains('firstName')).toBe(true);
     expect(component.form.contains('lastName')).toBe(true);
     expect(component.form.contains('email')).toBe(true);
-    expect(component.form.contains('role')).toBe(true);
-    expect(component.form.get('role')?.value).toBe('student');
+    expect(component.form.contains('roleIds')).toBe(true);
   });
 
   it('close sets visible to false', () => {
@@ -66,7 +80,7 @@ describe('UserFormDialogComponent', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       email: 'jane@test.com',
-      role: 'teacher' as UserRole,
+      roleIds: ['r2'],
     });
     let emitted: UserFormSavePayload | undefined;
     component.saveRequest.subscribe((e) => (emitted = e));
@@ -77,7 +91,7 @@ describe('UserFormDialogComponent', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       email: 'jane@test.com',
-      role: 'teacher',
+      roleIds: ['r2'],
     });
   });
 
@@ -87,7 +101,7 @@ describe('UserFormDialogComponent', () => {
     component.form.patchValue({
       firstName: 'Jane',
       lastName: 'Doe',
-      role: 'teacher' as UserRole,
+      roleIds: ['r2'],
     });
     component.form.get('email')?.disable();
     let emitted: UserFormSavePayload | undefined;
@@ -99,12 +113,12 @@ describe('UserFormDialogComponent', () => {
     expect((emitted as { id: string; dto: UpdateUserDto }).dto).toEqual({
       firstName: 'Jane',
       lastName: 'Doe',
-      role: 'teacher',
+      roleIds: ['r2'],
     });
   });
 
-  it('roles has Student, Teacher, Admin', () => {
-    expect(component.roles.length).toBe(3);
-    expect(component.roles.map((r) => r.label)).toEqual(['Student', 'Teacher', 'Admin']);
+  it('loads assignable roles from PermissionsService', () => {
+    expect(component.assignableRoles.length).toBe(3);
+    expect(component.assignableRoles.map((r) => r.name)).toEqual(['student', 'teacher', 'admin']);
   });
 });

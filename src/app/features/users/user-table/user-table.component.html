@@ -23,9 +23,9 @@
         Email
         <p-sortIcon field="email" />
       </th>
-      <th pSortableColumn="role">
-        Role
-        <p-sortIcon field="role" />
+      <th pSortableColumn="roles">
+        Roles
+        <p-sortIcon field="roles" />
       </th>
       <th pSortableColumn="createdAt">
         Created
@@ -40,16 +40,18 @@
       <td>{{ user.lastName }}</td>
       <td>{{ user.email }}</td>
       <td>
-        <span
-          class="inline-flex px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide transition-transform duration-200 hover:scale-105"
-          [ngClass]="{
-            'bg-primary-100 text-primary-700': user.role === 'student',
-            'bg-amber-100 text-amber-800': user.role === 'teacher',
-            'bg-violet-100 text-violet-800': user.role === 'admin'
-          }"
-        >
-          {{ user.role }}
-        </span>
+        @for (r of getRoles(user); track r._id) {
+          <span
+            class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide mr-1 last:mr-0"
+            [ngClass]="{
+              'bg-primary-100 text-primary-700': r.name === 'student',
+              'bg-amber-100 text-amber-800': r.name === 'teacher',
+              'bg-violet-100 text-violet-800': r.name === 'admin'
+            }"
+          >
+            {{ r.name }}
+          </span>
+        }
       </td>
       <td>{{ user.createdAt | date : 'medium' }}</td>
       <td>

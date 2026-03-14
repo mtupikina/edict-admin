@@ -58,21 +58,21 @@
       }
     </div>
     <div>
-      <label for="role" class="block text-sm font-semibold text-slate-700 mb-1.5">
-        Role
+      <label for="roleIds" class="block text-sm font-semibold text-slate-700 mb-1.5">
+        Roles
       </label>
-      <p-dropdown
-        inputId="role"
-        formControlName="role"
-        [options]="roles"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Select role"
+      <p-multiSelect
+        inputId="roleIds"
+        formControlName="roleIds"
+        [options]="assignableRoles"
+        optionLabel="name"
+        optionValue="_id"
+        placeholder="Select roles"
         styleClass="w-full"
         [appendTo]="'body'"
       />
-      @if (form.get('role')?.invalid && form.get('role')?.touched) {
-        <small class="text-red-600">Role is required</small>
+      @if (form.get('roleIds')?.invalid && form.get('roleIds')?.touched) {
+        <small class="text-red-600">At least one role is required</small>
       }
     </div>
   </form>

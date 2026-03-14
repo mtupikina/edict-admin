@@ -8,7 +8,7 @@ const mockUser: User = {
   firstName: 'John',
   lastName: 'Doe',
   email: 'john@test.com',
-  role: 'student',
+  roleIds: [{ _id: 'r1', name: 'student' }],
   createdAt: '',
   updatedAt: '',
 };

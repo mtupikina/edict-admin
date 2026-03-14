@@ -9,13 +9,14 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ConfirmationService, MessageService, Confirmation } from 'primeng/api';
 import { User } from '../models/user.model';
 import { UserFormSavePayload } from '../user-form-dialog/user-form-dialog.component';
+import { PermissionsService } from '../../permissions/services/permissions.service';
 
 const mockUser: User = {
   _id: '1',
   firstName: 'John',
   lastName: 'Doe',
   email: 'john@test.com',
-  role: 'student',
+  roleIds: [{ _id: 'r1', name: 'student' }],
   createdAt: '',
   updatedAt: '',
 };
@@ -37,6 +38,7 @@ describe('UserListComponent', () => {
         ConfirmationService,
         { provide: UserService, useValue: userService },
         { provide: AuthService, useValue: jasmine.createSpyObj('AuthService', ['logout']) },
+        { provide: PermissionsService, useValue: { getAllRoles: () => of([]) } },
       ],
     }).compileComponents();
 
@@ -94,7 +96,7 @@ describe('UserListComponent', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       email: 'jane@test.com',
-      role: 'teacher',
+      roleIds: ['r2'],
     };
     component.onSave(payload);
     setTimeout(() => {
@@ -110,7 +112,7 @@ describe('UserListComponent', () => {
     userService.getAll.and.returnValue(of([]));
     const payload: UserFormSavePayload = {
       id: '1',
-      dto: { firstName: 'Jane', lastName: 'Doe', role: 'teacher' },
+      dto: { firstName: 'Jane', lastName: 'Doe', roleIds: ['r2'] },
     };
     component.onSave(payload);
     setTimeout(() => {
@@ -127,7 +129,7 @@ describe('UserListComponent', () => {
       firstName: 'J',
       lastName: 'D',
       email: 'j@test.com',
-      role: 'student',
+      roleIds: ['r1'],
     });
     tick();
     expect(component.saving).toBe(false);
@@ -142,7 +144,7 @@ describe('UserListComponent', () => {
       firstName: 'J',
       lastName: 'D',
       email: 'j@test.com',
-      role: 'student',
+      roleIds: ['r1'],
     });
     tick();
     expect(component.saving).toBe(false);
@@ -155,7 +157,7 @@ describe('UserListComponent', () => {
     userService.update.and.returnValue(throwError(() => ({})));
     component.onSave({
       id: '1',
-      dto: { firstName: 'J', lastName: 'D', role: 'student' },
+      dto: { firstName: 'J', lastName: 'D', roleIds: ['r1'] },
     });
     tick();
     expect(component.saving).toBe(false);

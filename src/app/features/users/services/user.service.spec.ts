@@ -9,7 +9,7 @@ const mockUser: User = {
   firstName: 'John',
   lastName: 'Doe',
   email: 'john@test.com',
-  role: 'student',
+  roleIds: [{ _id: 'r1', name: 'student' }],
   createdAt: '',
   updatedAt: '',
 };
@@ -54,7 +54,7 @@ describe('UserService', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       email: 'jane@test.com',
-      role: 'teacher',
+      roleIds: ['r2'],
     };
     service.create(dto).subscribe((user) => {
       expect(user).toEqual(mockUser);
