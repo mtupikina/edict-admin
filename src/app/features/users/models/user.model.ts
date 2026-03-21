@@ -6,6 +6,7 @@ export interface User {
   lastName: string;
   email: string;
   roleIds: Role[];
+  tutorIds?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -15,6 +16,7 @@ export interface CreateUserDto {
   lastName: string;
   email: string;
   roleIds: string[];
+  tutorIds?: string[];
 }
 
 export type UpdateUserDto = Partial<CreateUserDto>;

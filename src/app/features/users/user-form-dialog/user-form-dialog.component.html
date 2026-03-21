@@ -3,7 +3,7 @@
   (visibleChange)="visible.set($event)"
   [header]="user() ? 'Edit User' : 'Create User'"
   [modal]="true"
-  [style]="{ width: 'min(100%, 400px)' }"
+  [style]="{ width: 'min(100%, 480px)' }"
   [draggable]="false"
   [resizable]="false"
   (onHide)="close()"
@@ -74,6 +74,26 @@
       @if (form.get('roleIds')?.invalid && form.get('roleIds')?.touched) {
         <small class="text-red-600">At least one role is required</small>
       }
+    </div>
+    <div>
+      <label for="tutorIds" class="block text-sm font-semibold text-slate-700 mb-1.5">
+        Tutors
+      </label>
+      <p class="text-xs text-slate-500 mb-1.5">
+        Only users with tutor, admin, or super_admin role can be assigned.
+      </p>
+      <p-multiSelect
+        inputId="tutorIds"
+        formControlName="tutorIds"
+        [options]="tutorOptions"
+        optionLabel="label"
+        optionValue="_id"
+        placeholder="Select tutors (optional)"
+        styleClass="w-full"
+        [appendTo]="'body'"
+        [filter]="true"
+        filterPlaceHolder="Search by name or email"
+      />
     </div>
   </form>
   <ng-template pTemplate="footer">

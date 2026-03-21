@@ -27,6 +27,7 @@
         Roles
         <p-sortIcon field="roles" />
       </th>
+      <th>Tutors</th>
       <th pSortableColumn="createdAt">
         Created
         <p-sortIcon field="createdAt" />
@@ -45,12 +46,28 @@
             class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide mr-1 last:mr-0"
             [ngClass]="{
               'bg-primary-100 text-primary-700': r.name === 'student',
-              'bg-amber-100 text-amber-800': r.name === 'teacher',
-              'bg-violet-100 text-violet-800': r.name === 'admin'
+              'bg-amber-100 text-amber-800': r.name === 'tutor',
+              'bg-violet-100 text-violet-800': r.name === 'admin',
+              'bg-rose-100 text-rose-900': r.name === 'super_admin'
             }"
           >
             {{ r.name }}
           </span>
+        }
+      </td>
+      <td>
+        @if (tutorRowsFor(user).length === 0) {
+          <span class="text-slate-400 text-sm">—</span>
+        } @else {
+          @for (t of tutorRowsFor(user); track t.tutorUserId) {
+            <span
+              class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium mr-1 last:mr-0 bg-sky-100 text-sky-900"
+              [pTooltip]="t.label"
+              tooltipPosition="top"
+            >
+              {{ t.label }}
+            </span>
+          }
         }
       </td>
       <td>{{ user.createdAt | date : 'medium' }}</td>
@@ -61,8 +78,11 @@
             [rounded]="true"
             [text]="true"
             severity="secondary"
+            [disabled]="hasSuperAdminRole(user)"
             (onClick)="onEdit(user)"
-            pTooltip="Edit"
+            [pTooltip]="
+              hasSuperAdminRole(user) ? 'Super admin accounts cannot be edited here' : 'Edit'
+            "
             tooltipPosition="top"
           />
           <p-button
@@ -70,8 +90,11 @@
             [rounded]="true"
             [text]="true"
             severity="danger"
+            [disabled]="hasSuperAdminRole(user)"
             (onClick)="onDelete($event, user)"
-            pTooltip="Delete"
+            [pTooltip]="
+              hasSuperAdminRole(user) ? 'Super admin accounts cannot be deleted here' : 'Delete'
+            "
             tooltipPosition="top"
           />
         </div>
@@ -80,7 +103,7 @@
   </ng-template>
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="6" class="text-center py-12 text-slate-500 font-medium">
+      <td colspan="7" class="text-center py-12 text-slate-500 font-medium">
         No users found. Add your first user.
       </td>
     </tr>

@@ -22,6 +22,7 @@
 
 <app-user-form-dialog
   [(visible)]="dialogVisible"
+  [users]="users"
   [user]="editingUser"
   [saving]="saving"
   (saveRequest)="onSave($event)"

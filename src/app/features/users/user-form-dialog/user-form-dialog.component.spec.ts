@@ -6,12 +6,33 @@ import { of } from 'rxjs';
 import { UserFormDialogComponent, UserFormSavePayload } from './user-form-dialog.component';
 import { User, UpdateUserDto } from '../models/user.model';
 import { PermissionsService } from '../../permissions/services/permissions.service';
+import { ROLE_NAMES } from '../../permissions/constants/role-names';
 
 const mockRoles = [
   { _id: 'r1', name: 'student' },
-  { _id: 'r2', name: 'teacher' },
+  { _id: 'r2', name: 'tutor' },
   { _id: 'r3', name: 'admin' },
 ];
+
+const mockTutorUser: User = {
+  _id: '2',
+  firstName: 'Tutor',
+  lastName: 'User',
+  email: 'tutor@test.com',
+  roleIds: [mockRoles[1]],
+  createdAt: '',
+  updatedAt: '',
+};
+
+const mockStudentOnlyUser: User = {
+  _id: '3',
+  firstName: 'Student',
+  lastName: 'Only',
+  email: 'studentonly@test.com',
+  roleIds: [{ _id: 'r1', name: ROLE_NAMES.STUDENT }],
+  createdAt: '',
+  updatedAt: '',
+};
 
 const mockUser: User = {
   _id: '1',
@@ -19,6 +40,7 @@ const mockUser: User = {
   lastName: 'Doe',
   email: 'john@test.com',
   roleIds: [mockRoles[0]],
+  tutorIds: ['2'],
   createdAt: '',
   updatedAt: '',
 };
@@ -43,6 +65,7 @@ describe('UserFormDialogComponent', () => {
     fixture = TestBed.createComponent(UserFormDialogComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('user', null);
+    fixture.componentRef.setInput('users', [mockTutorUser, mockStudentOnlyUser]);
     fixture.componentRef.setInput('visible', false);
     fixture.componentRef.setInput('saving', false);
     fixture.detectChanges();
@@ -57,6 +80,13 @@ describe('UserFormDialogComponent', () => {
     expect(component.form.contains('lastName')).toBe(true);
     expect(component.form.contains('email')).toBe(true);
     expect(component.form.contains('roleIds')).toBe(true);
+    expect(component.form.contains('tutorIds')).toBe(true);
+  });
+
+  it('loads tutor options excluding student-only users', () => {
+    expect(component.tutorOptions.length).toBe(1);
+    expect(component.tutorOptions[0]._id).toBe('2');
+    expect(component.tutorOptions[0].label).toContain('tutor@test.com');
   });
 
   it('close sets visible to false', () => {
@@ -81,6 +111,7 @@ describe('UserFormDialogComponent', () => {
       lastName: 'Doe',
       email: 'jane@test.com',
       roleIds: ['r2'],
+      tutorIds: [],
     });
     let emitted: UserFormSavePayload | undefined;
     component.saveRequest.subscribe((e) => (emitted = e));
@@ -95,6 +126,26 @@ describe('UserFormDialogComponent', () => {
     });
   });
 
+  it('submit with valid form (create) emits tutorIds when tutors selected', () => {
+    component.form.setValue({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane@test.com',
+      roleIds: ['r2'],
+      tutorIds: ['2'],
+    });
+    let emitted: UserFormSavePayload | undefined;
+    component.saveRequest.subscribe((e) => (emitted = e));
+    component.submit();
+    expect(emitted).toEqual({
+      firstName: 'Jane',
+      lastName: 'Doe',
+      email: 'jane@test.com',
+      roleIds: ['r2'],
+      tutorIds: ['2'],
+    });
+  });
+
   it('submit with valid form (edit) emits update payload', () => {
     fixture.componentRef.setInput('user', mockUser);
     fixture.detectChanges();
@@ -102,6 +153,7 @@ describe('UserFormDialogComponent', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       roleIds: ['r2'],
+      tutorIds: ['2'],
     });
     component.form.get('email')?.disable();
     let emitted: UserFormSavePayload | undefined;
@@ -114,11 +166,16 @@ describe('UserFormDialogComponent', () => {
       firstName: 'Jane',
       lastName: 'Doe',
       roleIds: ['r2'],
+      tutorIds: ['2'],
     });
   });
 
-  it('loads assignable roles from PermissionsService', () => {
+  it('loads assignable roles when dialog opens', async () => {
+    expect(component.assignableRoles.length).toBe(0);
+    fixture.componentRef.setInput('visible', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
     expect(component.assignableRoles.length).toBe(3);
-    expect(component.assignableRoles.map((r) => r.name)).toEqual(['student', 'teacher', 'admin']);
+    expect(component.assignableRoles.map((r) => r.name)).toEqual(['student', 'tutor', 'admin']);
   });
 });

@@ -1,20 +1,26 @@
-import { Component, inject, input, output, model, effect, OnInit } from '@angular/core';
+import { Component, inject, input, output, model, effect } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { filter, switchMap, take } from 'rxjs';
 import { User } from '../models/user.model';
 import { CreateUserDto, UpdateUserDto } from '../models/user.model';
 import { PermissionsService } from '../../permissions/services/permissions.service';
 import { Role } from '../../permissions/models/role.model';
+import { ROLE_NAMES, userMayBeTutor } from '../../permissions/constants/role-names';
 
 export type UserFormSavePayload =
   | CreateUserDto
   | { id: string; dto: UpdateUserDto };
 
-const SUPER_ADMIN_NAME = 'super_admin';
+export interface TutorSelectOption {
+  _id: string;
+  label: string;
+}
 
 @Component({
   selector: 'app-user-form-dialog',
@@ -29,7 +35,9 @@ const SUPER_ADMIN_NAME = 'super_admin';
   ],
   templateUrl: './user-form-dialog.component.html',
 })
-export class UserFormDialogComponent implements OnInit {
+export class UserFormDialogComponent {
+  /** User list from parent (avoids a duplicate GET /users while the dialog is closed). */
+  users = input<User[]>([]);
   user = input<User | null>(null);
   visible = model<boolean>(false);
   saving = input<boolean>(false);
@@ -40,14 +48,46 @@ export class UserFormDialogComponent implements OnInit {
 
   /** Assignable roles (excludes super_admin). */
   assignableRoles: Role[] = [];
+  /** Users that can be selected as tutors (labels for multi-select). */
+  tutorOptions: TutorSelectOption[] = [];
   readonly form = this.fb.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     roleIds: [[] as string[], [Validators.required, Validators.minLength(1)]],
+    tutorIds: [[] as string[]],
   });
 
   constructor() {
+    effect(() => {
+      const list = this.users();
+      this.tutorOptions = list
+        .filter((candidate) =>
+          userMayBeTutor((candidate.roleIds ?? []).map((r) => r.name)),
+        )
+        .map((u) => ({
+          _id: u._id,
+          label: `${u.firstName} ${u.lastName} (${u.email})`,
+        }));
+    });
+
+    toObservable(this.visible)
+      .pipe(
+        filter(Boolean),
+        switchMap(() => this.permissionsService.getAllRoles().pipe(take(1))),
+        takeUntilDestroyed(),
+      )
+      .subscribe((roles) => {
+        this.assignableRoles = roles.filter((r) => r.name !== ROLE_NAMES.SUPER_ADMIN);
+        if (
+          !this.user() &&
+          this.assignableRoles.length > 0 &&
+          !this.form.get('roleIds')?.value?.length
+        ) {
+          this.form.patchValue({ roleIds: [this.assignableRoles[0]._id] });
+        }
+      });
+
     effect(() => {
       this.visible(); // re-run when dialog opens/closes
       const u = this.user();
@@ -58,6 +98,7 @@ export class UserFormDialogComponent implements OnInit {
           lastName: u.lastName,
           email: u.email,
           roleIds,
+          tutorIds: u.tutorIds?.length ? [...u.tutorIds] : [],
         });
         this.form.get('email')?.disable();
       } else {
@@ -68,25 +109,10 @@ export class UserFormDialogComponent implements OnInit {
           lastName: '',
           email: '',
           roleIds: defaultRoleIds,
+          tutorIds: [],
         });
         this.form.get('email')?.enable();
       }
-    });
-  }
-
-  ngOnInit(): void {
-    this.permissionsService.getAllRoles().subscribe({
-      next: (roles) => {
-        this.assignableRoles = roles.filter((r) => r.name !== SUPER_ADMIN_NAME);
-        if (
-          !this.user() &&
-          this.visible() &&
-          this.assignableRoles.length > 0 &&
-          !this.form.get('roleIds')?.value?.length
-        ) {
-          this.form.patchValue({ roleIds: [this.assignableRoles[0]._id] });
-        }
-      },
     });
   }
 
@@ -108,15 +134,20 @@ export class UserFormDialogComponent implements OnInit {
           firstName: value.firstName,
           lastName: value.lastName,
           roleIds: value.roleIds,
+          tutorIds: value.tutorIds,
         },
       });
     } else {
-      this.saveRequest.emit({
+      const createPayload: CreateUserDto = {
         firstName: value.firstName,
         lastName: value.lastName,
         email: value.email,
         roleIds: value.roleIds,
-      });
+      };
+      if (value.tutorIds.length > 0) {
+        createPayload.tutorIds = value.tutorIds;
+      }
+      this.saveRequest.emit(createPayload);
     }
   }
 }
