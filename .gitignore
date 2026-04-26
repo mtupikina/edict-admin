@@ -42,3 +42,6 @@ testem.log
 # Environment
 .env
 .env.local
+
+# Vercel (local `vercel pull` / link; CI creates this each run)
+.vercel
